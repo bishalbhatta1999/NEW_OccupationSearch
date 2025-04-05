@@ -1,0 +1,132 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return request.auth.token.admin == true;
+    }
+    
+    function isValidContentType() {
+      return request.resource.contentType.matches('image/.*') ||
+             request.resource.contentType.matches('application/pdf') ||
+             request.resource.contentType.matches('application/msword') ||
+             request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.wordprocessingml.document') ||
+             request.resource.contentType.matches('text/csv') ||
+             request.resource.contentType.matches('text/plain');
+    }
+    
+    function isValidFileSize() {
+      return request.resource.size < 5 * 1024 * 1024; // 5MB limit
+    }
+
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isValidImageSize() {
+      return request.resource.size < 2 * 1024 * 1024; // 2MB limit for images
+    }
+
+    // Profile Pictures
+    match /profilePictures/{userId} {
+      allow read: if true;
+      allow write: if isAuthenticated() &&
+                   isOwner(userId) &&
+                   isValidImageType() &&
+                   isValidImageSize();
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Company Logos
+    match /logos/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isValidImageType() && isValidImageSize();
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Document Uploads
+    match /documents/{userId}/{document=**} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() &&
+                    isOwner(userId) &&
+                    isValidContentType() &&
+                    isValidFileSize();
+      allow update: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAuthenticated() && (isOwner(userId) || isAdmin());
+    }
+
+    // Training Documents (Admin Only)
+    match /training/{document=**} {
+      allow read: if isAuthenticated() && isEmailVerified() && isAdmin();
+      allow write: if isAuthenticated() &&
+                   isEmailVerified() &&
+                   isAdmin() &&
+                   isValidContentType() &&
+                   isValidFileSize();
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+
+    // Chatbot Training Data
+    match /training_chbot/{document=**} {
+      allow read: if isAuthenticated() && isEmailVerified();
+      allow write: if isAuthenticated() &&
+                   isEmailVerified() &&
+                   isAdmin() &&
+                   isValidContentType() &&
+                   isValidFileSize();
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+
+    // Public Resources
+    match /public/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() &&
+                   isAdmin() &&
+                   isValidContentType() &&
+                   isValidFileSize();
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+
+    // Temporary Files (24-hour expiry)
+    match /temp/{document=**} {
+      allow read: if true;
+      allow create: if isAuthenticated() &&
+                    isValidContentType() &&
+                    isValidFileSize() &&
+                    request.resource.metadata.expiry > request.time &&
+                    request.resource.metadata.expiry < request.time + duration.value(24, "h");
+      allow delete: if isAuthenticated() && (isOwner(request.resource.metadata.userId) || isAdmin());
+    }
+
+    // User Documents
+    match /userDocuments/{userId}/{document=**} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() &&
+                    isOwner(userId) &&
+                    isValidContentType() &&
+                    isValidFileSize();
+      allow update: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAuthenticated() && (isOwner(userId) || isAdmin());
+    }
+
+    // Prospect Documents
+    match /prospects/{prospectId}/{document=**} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow write: if isAuthenticated() && isAdmin() && isValidContentType() && isValidFileSize();
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+  }
+}

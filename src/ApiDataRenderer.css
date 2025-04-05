@@ -1,0 +1,212 @@
+:root {
+  /* Primary palette */
+  --color-primary: rgb(37, 99, 235);
+  --color-primary-light: rgba(37, 99, 235, 0.1);
+  --color-primary-dark: rgba(37, 99, 235, 0.9);
+
+  /* Text, background, border, etc. */
+  --color-text: #1a202c;
+  --color-bg: #f9fafb;
+  --color-border: rgba(37, 99, 235, 0.3);
+
+  /* Font and spacing */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --line-height: 1.6;
+  --radius-default: 12px;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --transition-speed: 0.2s;
+}
+
+/* Container that wraps the API-rendered content */
+.api-content {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  line-height: var(--line-height);
+  width: 100%;
+  background-color: var(--color-bg);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-default);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Headings inherit the brand color */
+.api-content h1,
+.api-content h2,
+.api-content h3,
+.api-content h4,
+.api-content h5,
+.api-content h6 {
+  color: var(--color-primary);
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Paragraphs */
+.api-content p {
+  margin-bottom: var(--spacing-md);
+  font-size: 1rem;
+}
+
+/* Emphasis in primary-dark color */
+.api-content b {
+  color: var(--color-primary-dark);
+}
+
+/* Lists */
+.api-content ul {
+  list-style-type: disc;
+  padding-left: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.api-content ul ul {
+  padding-left: var(--spacing-lg);
+}
+
+.api-content li {
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Links */
+.api-content a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  transition: color var(--transition-speed) ease;
+}
+
+.api-content a:hover,
+.api-content a:focus {
+  color: var(--color-primary-dark);
+}
+
+/* Legacy <font> usage (not recommended). */
+.api-content font {
+  font-size: 1rem;
+}
+
+/* Extra margin after line breaks if needed */
+.api-content br {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* -----------------------------------------------------
+   CARD STYLES
+   ----------------------------------------------------- */
+/* A reusable card container with subtle hover effects. */
+.api-card {
+  background-color: #fff;
+  border: 1px solid #e5e7eb; /* A neutral border by default */
+  border-radius: var(--radius-default);
+  padding: var(--spacing-md);
+  transition:
+    border-color var(--transition-speed) ease,
+    transform var(--transition-speed) ease,
+    box-shadow var(--transition-speed) ease;
+}
+
+/* Hover: highlight the border and slightly lift. */
+.api-card:hover {
+  border-color: var(--color-border);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0,0,0,0.1);
+}
+
+/* A heading section inside a card */
+.api-card-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+/* A small icon container in the heading (circle or pill shape) */
+.api-card-heading-icon {
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-default);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* -----------------------------------------------------
+   PILL / TAG STYLE
+   ----------------------------------------------------- */
+.api-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px; /* fully rounded */
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-weight: 500;
+  font-size: 0.875rem; /* slightly smaller text */
+}
+
+/* Example variant for skill levels */
+.api-pill-skill {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+/* -----------------------------------------------------
+   BUTTON STYLES
+   ----------------------------------------------------- */
+/* A generic button class with a brand background & hover effects. */
+.api-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-default);
+  text-decoration: none;
+  transition:
+    background-color var(--transition-speed) ease,
+    box-shadow var(--transition-speed) ease,
+    transform var(--transition-speed) ease;
+}
+
+.api-btn:hover {
+  background-color: var(--color-primary-dark);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+/* A secondary button variant, e.g. a white background with brand border. */
+.api-btn-secondary {
+  background-color: #fff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+}
+
+.api-btn-secondary:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+/* 
+Example usage (HTML or JSX):
+<div class="api-content">
+  <div class="api-card">
+    <div class="api-card-heading">
+      <div class="api-card-heading-icon">
+        <!-- icon here -->
+      </div>
+      <h3>OSCA Details</h3>
+    </div>
+    <div class="api-pill api-pill-skill">Skill Level 2</div>
+    ...
+    <a href="..." class="api-btn">
+      <!-- icon --> View on ABS
+    </a>
+  </div>
+</div>
+*/

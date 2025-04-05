@@ -1,0 +1,5 @@
+•	Default stack: JSX with Tailwind CSS, React hooks, and lucide-react (for icons).
+	•	Do not install additional UI libraries, icon sets, or themes unless it is absolutely necessary or I explicitly request them.
+	•	Use Unsplash for stock photos, linking only to valid image URLs you know exist (no downloaded images).
+	•	Use lucide-react icons for logos.
+	•	Think logically about the user’s needs, and add missing code where needed to ensure fully functional, robust pages.
