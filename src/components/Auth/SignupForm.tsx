@@ -119,9 +119,15 @@ const SignupForm: React.FC<SignupFormProps> = ({ onClose, onSuccess }) => {
         ownerId: userCredential.user.uid,
         companyId: companyDoc.id,
       })
+      await userCredential.user.reload()
 
       // 6) Email verification + displayName
-      await sendEmailVerification(userCredential.user)
+      try {
+        await sendEmailVerification(userCredential.user)
+      } catch (emailError) {
+        console.error("Error sending email verification:", emailError)
+        // Optionally setError or handle gracefully
+      }
       await updateProfile(userCredential.user, {
         displayName: `${firstName} ${lastName}`,
       })
