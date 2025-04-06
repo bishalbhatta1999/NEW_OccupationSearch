@@ -174,6 +174,15 @@ const Dashboard: React.FC = () => {
       }
 
       try {
+        // Reload user to get fresh verification status
+        await currentUser.reload()
+
+        // Check if email is verified
+        if (!currentUser.emailVerified) {
+          navigate("/verification")
+          return
+        }
+
         setUser(currentUser)
         const userDocRef = doc(db, "users", currentUser.uid)
         const userDoc = await getDoc(userDocRef)
@@ -1004,44 +1013,43 @@ const Dashboard: React.FC = () => {
 
               {/* Profile dropdown */}
               <div className="ml-3 relative">
-  <div>
-    <button
-      className="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      id="user-menu"
-      aria-expanded="false"
-      aria-haspopup="true"
-      onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-    >
-      <span className="sr-only">Open user menu</span>
-      <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-        {userData?.firstName?.charAt(0) || user?.displayName?.charAt(0) || "U"}
-      </div>
-    </button>
-  </div>
+                <div>
+                  <button
+                    className="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    id="user-menu"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  >
+                    <span className="sr-only">Open user menu</span>
+                    <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                      {userData?.firstName?.charAt(0) || user?.displayName?.charAt(0) || "U"}
+                    </div>
+                  </button>
+                </div>
 
-  {/* Dropdown menu */}
-  {showProfileDropdown && (
-    <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-      <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
-        <button
-          onClick={() => navigate("/profile")}
-          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-          role="menuitem"
-        >
-          Profile
-        </button>
-        <button
-          onClick={handleSignOut}
-          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-          role="menuitem"
-        >
-          Sign out
-        </button>
-      </div>
-    </div>
-  )}
-</div>
-
+                {/* Dropdown menu */}
+                {showProfileDropdown && (
+                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                    <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
+                      <button
+                        onClick={() => navigate("/profile")}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                        role="menuitem"
+                      >
+                        Profile
+                      </button>
+                      <button
+                        onClick={handleSignOut}
+                        className="block px-4 py-2 text-sm text-red-700 hover:bg-gray-100 w-full text-left"
+                        role="menuitem"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

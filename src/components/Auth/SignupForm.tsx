@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth"
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth"
 import { doc, setDoc, collection, getDocs, addDoc, query, where } from "firebase/firestore"
 import { auth, db } from "../../lib/firebase"
 import { AlertCircle, Loader2, X } from "lucide-react"
@@ -31,20 +31,12 @@ const SignupForm: React.FC<SignupFormProps> = ({ onClose, onSuccess }) => {
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
 
-  // Check if this is the superadmin email
-  const isSuperAdmin = (userEmail: string) => {
-    return userEmail === "admin4545@gmail.com"
-  }
+  const isSuperAdmin = (userEmail: string) => userEmail === "admin4545@gmail.com"
 
-  // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  // Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -64,7 +56,6 @@ const SignupForm: React.FC<SignupFormProps> = ({ onClose, onSuccess }) => {
         confirmPassword,
       } = formData
 
-      // 1) Basic validation
       if (!firstName || !lastName) throw new Error("Please enter first and last name")
       if (!email) throw new Error("Please enter your email")
       if (!phone) throw new Error("Please enter your phone number")
@@ -74,21 +65,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ onClose, onSuccess }) => {
       if (password !== confirmPassword) throw new Error("Passwords don't match")
       if (password.length < 6) throw new Error("Password must be at least 6 characters")
 
-      // 2) Check domain uniqueness
       const companyQuery = query(collection(db, "companies"), where("domain", "==", companyDomain))
       const companySnapshot = await getDocs(companyQuery)
-      if (!companySnapshot.empty) {
-        throw new Error("A company with this domain already exists")
-      }
+      if (!companySnapshot.empty) throw new Error("A company with this domain already exists")
 
-      // 3) Create user in Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       const userId = userCredential.user.uid
-
-      // Determine if this is the superadmin
       const isAdmin = isSuperAdmin(email)
 
-      // 4) Create the company doc
       const companyDoc = await addDoc(collection(db, "companies"), {
         registeredName: companyRegisteredName,
         businessName,
@@ -101,10 +85,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ onClose, onSuccess }) => {
         status: "active",
         maxUsers: 3,
         subscriptionStatus: "active",
-        subscriptionPlan: "standard", // Default to standard plan
+        subscriptionPlan: "standard",
       })
 
-      // 5) Create the user doc
       await setDoc(doc(db, "users", userId), {
         userId: `OS${Date.now().toString().slice(-6)}`,
         firstName,
@@ -119,32 +102,22 @@ const SignupForm: React.FC<SignupFormProps> = ({ onClose, onSuccess }) => {
         ownerId: userCredential.user.uid,
         companyId: companyDoc.id,
       })
-      await userCredential.user.reload()
 
-      // 6) Email verification + displayName
-      try {
-        await sendEmailVerification(userCredential.user)
-      } catch (emailError) {
-        console.error("Error sending email verification:", emailError)
-        // Optionally setError or handle gracefully
+      // Configure verification email settings with redirect to verification success page
+      const actionSettings = {
+        url: `${window.location.origin}/verification-success`, // Redirect to success page after verification
+        handleCodeInApp: false,
       }
+
+      // Send verification email through Firebase Auth
+      await sendEmailVerification(userCredential.user, actionSettings)
+
       await updateProfile(userCredential.user, {
         displayName: `${firstName} ${lastName}`,
       })
 
-      setError("Account created successfully! Redirecting to dashboard...")
-
-      // Call onSuccess to close modals
       onSuccess()
-
-      // Redirect to plan selection page after successful signup
-      setTimeout(() => {
-        if (isAdmin) {
-          navigate("/admin/dashboard", { replace: true })
-        } else {
-          navigate("/select-plan", { replace: true })
-        }
-      }, 1500)
+      navigate("/verification")
     } catch (err) {
       console.error("Signup error:", err)
       setError(err instanceof Error ? err.message : "Failed to create account")
@@ -174,6 +147,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onClose, onSuccess }) => {
       {/* Scrollable form container */}
       <div className="max-h-[70vh] overflow-auto">
         <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+          {/* Form fields remain the same */}
           {/* First Name */}
           <div className="flex flex-col">
             <label className="text-sm font-medium mb-1">First Name</label>

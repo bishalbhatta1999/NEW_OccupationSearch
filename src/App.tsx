@@ -23,6 +23,8 @@ import { useNavigate } from "react-router-dom"
 import AdminLogin from "./components/AdminPages/AdminLogin"
 import AdminDashboard from "./components/AdminPages/AdminDashboard"
 import PlanSelectionPage from "./pages/PlanSelectionPage"
+// Add the import for VerificationPage
+import VerificationPage from "./components/Auth/VerificationPage"
 
 interface AuthError {
   code?: string
@@ -103,6 +105,14 @@ function App() {
         setIsAdmin(userIsAdmin)
         setIsAuthenticated(true)
 
+        // Check if email is verified
+        if (!user.emailVerified && location.pathname !== "/verification") {
+          // If not verified and not already on verification page, redirect to verification
+          navigate("/verification")
+          setAuthChecked(true)
+          return
+        }
+
         // Redirect based on user type and if they have a plan
         let hasSelectedPlan = false
 
@@ -117,15 +127,18 @@ function App() {
           hasSelectedPlan = !!localStorage.getItem(`selectedPlan_${user.uid}`)
         }
 
-        // If we're already on the admin dashboard path, don't redirect
-        if (location.pathname === "/admin/dashboard" && userIsAdmin) {
+        // Only redirect if we're not already on the target page
+        // This prevents redirect loops
+        const currentPath = location.pathname
+
+        if (currentPath === "/admin/dashboard" && userIsAdmin) {
           // Stay on admin dashboard
-        } else if (userIsAdmin) {
+        } else if (userIsAdmin && currentPath !== "/admin/dashboard") {
           // Redirect admin to admin dashboard
           navigate("/admin/dashboard")
-        } else if (!hasSelectedPlan) {
+        } else if (!hasSelectedPlan && currentPath !== "/select-plan" && user.emailVerified) {
           navigate("/select-plan")
-        } else {
+        } else if (hasSelectedPlan && currentPath !== "/dashboard" && user.emailVerified) {
           navigate("/dashboard")
         }
       } catch (error) {
@@ -137,7 +150,19 @@ function App() {
       }
     })
 
-    return () => unsubscribe()
+    // Add an event listener for the showAuthModal event
+    const handleShowAuthModal = (event: any) => {
+      setShowAuthModal(true)
+      if (event.detail?.email) {
+        setEmail(event.detail.email)
+      }
+    }
+
+    window.addEventListener("showAuthModal", handleShowAuthModal)
+    return () => {
+      window.removeEventListener("showAuthModal", handleShowAuthModal)
+      unsubscribe()
+    }
   }, [navigate, location.pathname])
 
   const loadSectionContent = async (section: string) => {
@@ -515,6 +540,9 @@ function App() {
               path="/select-plan"
               element={isAuthenticated ? <PlanSelectionPage /> : <Navigate to="/" replace />}
             />
+            // Add the route for verification page in the Routes component // Find the Routes component and add this
+            route:
+            <Route path="/verification" element={<VerificationPage />} />
           </Routes>
         </main>
         {!isSearching && !isAuthenticated && location.pathname !== "/admin" && <Footer />}

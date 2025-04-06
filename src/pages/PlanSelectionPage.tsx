@@ -17,19 +17,29 @@ const PlanSelectionPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const app = initializeApp(firebaseConfig)
 
-  // Check if user is logged in
   useEffect(() => {
     const checkUserAuth = async () => {
-      if (!auth.currentUser) {
-        // If not logged in, redirect to login
+      const user = auth.currentUser
+
+      if (!user) {
         navigate("/")
         return
       }
+
+      // Reload user to get fresh verification status
+      await user.reload()
+
+      // Check if email is verified
+      if (!user.emailVerified) {
+        navigate("/verification")
+        return
+      }
+
       setIsLoading(false)
     }
 
     checkUserAuth()
-  }, [])
+  }, [navigate])
 
   const plans = [
     {
